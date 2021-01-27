@@ -16,14 +16,16 @@ define([
                 opts = me.options,
                 label = this.label = $( document.createElement('label') ),
                 input =  this.input = $( document.createElement('input') ),
-                arr, i, len, mouseHandler;
+                arr, i, len, mouseHandler, changeHandler;
 
             input.attr( 'type', 'file' );
+            input.attr( 'capture', 'camera');
             input.attr( 'name', opts.name );
             input.addClass('webuploader-element-invisible');
 
-            label.on( 'click', function() {
+            label.on( 'click', function(e) {
                 input.trigger('click');
+                e.stopPropagation();
                 owner.trigger('dialogopen');
             });
 
@@ -58,11 +60,17 @@ define([
                 owner.trigger( e.type );
             };
 
-            input.on( 'change', function( e ) {
-                var fn = arguments.callee,
-                    clone;
+            changeHandler = function( e ) {
+                var clone;
 
+                // 解决chrome 56 第二次打开文件选择器，然后点击取消，依然会触发change事件的问题
+                if (e.target.files.length === 0){
+                    return false;
+                }
+
+                // 第一次上传图片后，第二次再点击弹出文件选择器窗，等待
                 me.files = e.target.files;
+
 
                 // reset input
                 clone = this.cloneNode( true );
@@ -70,12 +78,12 @@ define([
                 this.parentNode.replaceChild( clone, this );
 
                 input.off();
-                input = $( clone ).on( 'change', fn )
+                input = $( clone ).on( 'change', changeHandler )
                         .on( 'mouseenter mouseleave', mouseHandler );
 
                 owner.trigger('change');
-            });
-
+            }
+            input.on( 'change', changeHandler);
             label.on( 'mouseenter mouseleave', mouseHandler );
 
         },

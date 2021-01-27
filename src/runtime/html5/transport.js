@@ -27,8 +27,8 @@ define([
                 formData, binary, fr;
 
             if ( opts.sendAsBinary ) {
-                server += (/\?/.test( server ) ? '&' : '?') +
-                        $.param( owner._formData );
+                server += opts.attachInfoToQuery !== false ? ((/\?/.test( server ) ? '&' : '?') +
+                        $.param( owner._formData )) : '';
 
                 binary = blob.getSource();
             } else {
@@ -84,6 +84,10 @@ define([
             return this._parseJson( this._response );
         },
 
+        getResponseHeaders: function() {
+            return this._headers;
+        },
+
         getStatus: function() {
             return this._status;
         },
@@ -102,6 +106,16 @@ define([
 
         destroy: function() {
             this.abort();
+        },
+
+        _parseHeader: function(raw) {
+            var ret = {};
+
+            raw && raw.replace(/^([^\:]+):(.*)$/mg, function(_, key, value) {
+                ret[key.trim()] = value.trim();
+            });
+
+            return ret;
         },
 
         _initAjax: function() {
@@ -135,16 +149,23 @@ define([
                 me._xhr = null;
                 me._status = xhr.status;
 
+                var separator = '|', // 分隔符
+                     // 拼接的状态，在 widgets/upload.js 会有代码用到这个分隔符
+                    status = separator + xhr.status +
+                             separator + xhr.statusText;
+
                 if ( xhr.status >= 200 && xhr.status < 300 ) {
                     me._response = xhr.responseText;
+                    me._headers = me._parseHeader(xhr.getAllResponseHeaders());
                     return me.trigger('load');
                 } else if ( xhr.status >= 500 && xhr.status < 600 ) {
                     me._response = xhr.responseText;
-                    return me.trigger( 'error', 'server' );
+                    me._headers = me._parseHeader(xhr.getAllResponseHeaders());
+                    return me.trigger( 'error', 'server' + status );
                 }
 
 
-                return me.trigger( 'error', me._status ? 'http' : 'abort' );
+                return me.trigger( 'error', me._status ? 'http' + status : 'abort' );
             };
 
             me._xhr = xhr;

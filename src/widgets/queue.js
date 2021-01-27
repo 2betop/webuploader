@@ -98,7 +98,7 @@ define([
         /**
          * @event beforeFileQueued
          * @param {File} file File对象
-         * @description 当文件被加入队列之前触发，此事件的handler返回值为`false`，则此文件不会被添加进入队列。
+         * @description 当文件被加入队列之前触发。如果此事件handler的返回值为`false`，则此文件不会被添加进入队列。
          * @for  Uploader
          */
 
@@ -167,13 +167,16 @@ define([
             files = $.map( files, function( file ) {
                 return me._addFile( file );
             });
+			
+			if ( files.length ) {
 
-            me.owner.trigger( 'filesQueued', files );
+                me.owner.trigger( 'filesQueued', files );
 
-            if ( me.options.auto ) {
-                setTimeout(function() {
-                    me.request('start-upload');
-                }, 20 );
+				if ( me.options.auto ) {
+					setTimeout(function() {
+						me.request('start-upload');
+					}, 20 );
+				}
             }
         },
 

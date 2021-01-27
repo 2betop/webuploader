@@ -3,6 +3,14 @@
  * 此页面用来协助 IE6/7 预览图片，因为 IE 6/7 不支持 base64
  */
 
+#!! 注意
+#!! 此文件只是个示例，不要用于真正的产品之中。
+#!! 不保证代码安全性。
+#!! IMPORTANT:
+#!! this file is just an example, it doesn't incorporate any security checks and
+#!! is not recommended to be used in production environment as it is. Be sure to
+#!! revise it and customize to your needs.
+
 $DIR = 'preview';
 // Create target dir
 if (!file_exists($DIR)) {
@@ -45,6 +53,10 @@ if (preg_match("#^data:image/(\w+);base64,(.*)$#", $src, $matches)) {
     $type = $matches[1];
     if ($type === 'jpeg') {
         $type = 'jpg';
+    }
+
+    if (!in_array($type, array("jpg", "png", "gif", "bmp"))) {
+        die('{"jsonrpc" : "2.0", "error" : {"code": 200, "message": "un recoginized image source"}, "id" : "id"}');
     }
 
     $filename = md5($base64).".$type";

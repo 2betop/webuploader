@@ -25,7 +25,8 @@ define([
          * * `numOfProgress` 正在上传中的文件数
          * * `numOfUploadFailed` 上传错误的文件数。
          * * `numOfInvalid` 无效的文件数。
-         * * `numofDeleted` 被移除的文件数。
+         * * `numOfDeleted` 被移除的文件数。
+         * * `numOfInterrupt` 被中断的文件数。
          * @property {Object} stats
          */
         this.stats = {
@@ -35,8 +36,8 @@ define([
             numOfProgress: 0,
             numOfUploadFailed: 0,
             numOfInvalid: 0,
-            numofDeleted: 0,
-            numofInterrupt: 0
+            numOfDeleted: 0,
+            numOfInterrupt: 0
         };
 
         // 上传队列，仅包括等待上传的文件
@@ -160,11 +161,13 @@ define([
 
             if ( existing ) {
                 delete this._map[ file.id ];
+                this._delFile(file);
                 file.destroy();
-                this.stats.numofDeleted++;
+                this.stats.numOfDeleted++;
+                
             }
         },
-
+		
         _fileAdded: function( file ) {
             var me = this,
                 existing = this._map[ file.id ];
@@ -175,6 +178,15 @@ define([
                 file.on( 'statuschange', function( cur, pre ) {
                     me._onFileStatusChange( cur, pre );
                 });
+            }
+        },
+
+        _delFile : function(file){
+            for(var i = this._queue.length - 1 ; i >= 0 ; i-- ){
+                if(this._queue[i] == file){
+                    this._queue.splice(i,1); 
+                    break;
+                }
             }
         },
 
@@ -199,7 +211,7 @@ define([
                     break;
 
                 case STATUS.INTERRUPT:
-                    stats.numofInterrupt--;
+                    stats.numOfInterrupt--;
                     break;
             }
 
@@ -230,7 +242,7 @@ define([
                     break;
 
                 case STATUS.INTERRUPT:
-                    stats.numofInterrupt++;
+                    stats.numOfInterrupt++;
                     break;
             }
         }

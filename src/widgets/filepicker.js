@@ -25,7 +25,7 @@ define([
         pick: null,
 
         /**
-         * @property {Arroy} [accept=null]
+         * @property {Array} [accept=null]
          * @namespace options
          * @for Uploader
          * @description 指定接受哪些类型的文件。 由于目前还有ext转mimeType表，所以这里需要分开指定。

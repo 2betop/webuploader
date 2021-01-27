@@ -5,7 +5,7 @@ define([
     '../base',
     '../runtime/client',
     './file'
-], function( Base, RuntimeClent, File ) {
+], function( Base, RuntimeClient, File ) {
 
     var $ = Base.$;
 
@@ -25,7 +25,7 @@ define([
         opts.button.html( opts.innerHTML );
         opts.container.html( opts.button );
 
-        RuntimeClent.call( this, 'FilePicker', true );
+        RuntimeClient.call( this, 'FilePicker', true );
     }
 
     FilePicker.options = {
@@ -35,29 +35,34 @@ define([
         innerHTML: null,
         multiple: true,
         accept: null,
-        name: 'file'
+        name: 'file',
+        style: 'webuploader-pick'   //pick element class attribute, default is "webuploader-pick"
     };
 
-    Base.inherits( RuntimeClent, {
+    Base.inherits( RuntimeClient, {
         constructor: FilePicker,
 
         init: function() {
             var me = this,
                 opts = me.options,
-                button = opts.button;
+                button = opts.button,
+                style = opts.style;
 
-            button.addClass('webuploader-pick');
+            if (style)
+                button.addClass('webuploader-pick');
 
             me.on( 'all', function( type ) {
                 var files;
 
                 switch ( type ) {
                     case 'mouseenter':
-                        button.addClass('webuploader-pick-hover');
+                        if (style)
+                            button.addClass('webuploader-pick-hover');
                         break;
 
                     case 'mouseleave':
-                        button.removeClass('webuploader-pick-hover');
+                        if (style)
+                            button.removeClass('webuploader-pick-hover');
                         break;
 
                     case 'change':
@@ -86,12 +91,15 @@ define([
         refresh: function() {
             var shimContainer = this.getRuntime().getContainer(),
                 button = this.options.button,
+                /*
                 width = button.outerWidth ?
                         button.outerWidth() : button.width(),
 
                 height = button.outerHeight ?
                         button.outerHeight() : button.height(),
-
+                */
+                width = button[0] && button[0].offsetWidth || button.outerWidth() || button.width(),
+                height = button[0] && button[0].offsetHeight || button.outerHeight() || button.height(),
                 pos = button.offset();
 
             width && height && shimContainer.css({
